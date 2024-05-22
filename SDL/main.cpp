@@ -2,21 +2,20 @@
 #include "EventHandler.h"
 #include "GameLogic.h"
 #include "Shapes.h"
+#include "Constants.h"
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <time.h>
-// 使用 Rendering.h 中的常量
+
 bool running = true;
 SDL_Renderer* renderer;
 SDL_Window* window;
-shape cur;
-shape next;  // 新增下一個方塊
-int score = 0;  // 新增分數
+int score = 0;
 bool left = false, right = false, up = false, down = false;
 
 int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow("212410012", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, TILE_SIZE * GRID_WIDTH + 100, TILE_SIZE * GRID_HEIGHT, 0);  // 增加寬度來顯示下一個方塊和分數
+    window = SDL_CreateWindow("212410012", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1000, 600, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     
     srand(time(NULL));  // 初始化隨機數生成器
