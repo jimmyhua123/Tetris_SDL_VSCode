@@ -1,5 +1,5 @@
 #include "GameLogic.h"
-#include "EventHandler.h"  // 添加這行來引入需要的變數
+#include "EventHandler.h"
 
 shape blocks[7] = {
     // L BLOCK
@@ -18,12 +18,16 @@ shape blocks[7] = {
     {{128,0,128}, {{0,1,0,0}, {1,1,1,0}, {0,0,0,0}, {0,0,0,0}}, 5, 4, 3}
 };
 
-
 void update() {
     if (left) cur.x--;
     if (right) cur.x++;
     if (down) cur.y++;
     if (up) rotate();
+
+    // 限制方塊在範圍內移動
+    if (cur.x < 0) cur.x = 0;
+    if (cur.x + cur.size > 10) cur.x = 10 - cur.size;
+    if (cur.y + cur.size > 20) cur.y = 20 - cur.size;
 }
 
 void rotate() {
