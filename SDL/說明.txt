@@ -1,0 +1,28 @@
+如何安裝 https://www.youtube.com/watch?v=jUZZC9UXyFs
+創一個src file
+把 SDL2-devel-2.30.3-mingw /i686-w64/的 include,lib 複製到src 
+把 bin/SDL2.dll 也複製到資料夾下
+編譯	
+g++ -I src/include -L src/lib -o main main.cpp -lmingw32 -lSDL2main -lSDL2
+
+
+
+g++ -o main main.cpp mygamesrc/src/GameLogic.cpp mygamesrc/src/EventHandler.cpp mygamesrc/src/Rendering.cpp -Imygamesrc/include -Isrc/include -Lsrc/lib -lmingw32 -lSDL2main -lSDL2
+
+執行./main.exe
+cd c/SDL
+
+
+C:\VSCode\c\SDL\
+    |- main.cpp
+    |- src
+    |- mygamesrc\
+        |- src\
+            |- GameLogic.cpp
+            |- EventHandler.cpp
+            |- Rendering.cpp
+        |- include\
+            |- Shapes.h
+            |- GameLogic.h
+            |- EventHandler.h
+            |- Rendering.h
