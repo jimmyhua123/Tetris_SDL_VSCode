@@ -6,28 +6,6 @@
 g++ -I src/include -L src/lib -o main main.cpp -lmingw32 -lSDL2main -lSDL2
 
 
-
-g++ -o main main.cpp mygamesrc/src/GameLogic.cpp mygamesrc/src/EventHandler.cpp mygamesrc/src/Rendering.cpp -Imygamesrc/include -Isrc/include -Lsrc/lib -lmingw32 -lSDL2main -lSDL2
-
-PS C:\VSCode\c\SDL> g++ -o main main.cpp mygamesrc/src/Shapes.cpp mygamesrc/src/Tetromino.cpp mygamesrc/src/GameLogic.cpp mygamesrc/src/drawScore.cpp -Imygamesrc/include -Isrc/include -Isrc/include/SDL2 -Lsrc/lib -lmingw32 -lSDL2main -lSDL2
-C:\Users\hua\AppData\Local\Temp\ccohDQ4r.o:drawScore.cpp:(.text+0x0): multiple definition of `drawScore(SDL_Renderer*, int)'
-C:\Users\hua\AppData\Local\Temp\ccpZr0Ax.o:GameLogic.cpp:(.text+0x682): first defined here
-collect2.exe: error: ld returned 1 exit status
-PS C:\VSCode\c\SDL>
-執行./main.exe
+g++ -o main main.cpp mygamesrc/src/Shapes.cpp mygamesrc/src/Tetromino.cpp mygamesrc/src/GameLogic.cpp mygamesrc/src/drawScore.cpp -Imygamesrc/include -Isrc/include -Isrc/include/SDL2 -Lsrc/lib -lmingw32 -lSDL2main -lSDL2
 cd c/SDL
 
-
-C:\VSCode\c\SDL\
-    |- main.cpp
-    |- src
-    |- mygamesrc\
-        |- src\
-            |- GameLogic.cpp
-            |- EventHandler.cpp
-            |- Rendering.cpp
-        |- include\
-            |- Shapes.h
-            |- GameLogic.h
-            |- EventHandler.h
-            |- Rendering.h
