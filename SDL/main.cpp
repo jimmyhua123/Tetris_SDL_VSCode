@@ -8,6 +8,7 @@
 #include "Shapes.h"
 #include "Tetromino.h"
 #include "GameLogic.h"
+#include <string>  // 添加這一行
 
 // 全局變量
 bool running = true;
@@ -16,7 +17,7 @@ SDL_Window* window;
 Tetromino currentPiece(0, 0, {{0}});
 Tetromino nextPiece(0, 0, {{0}});
 std::vector<std::vector<Color>> grid;
-int score = 0;
+int score = 0; // 初始化分數為0
 int fallTime = 0;
 int fallSpeed = FALL_SPEED;
 
@@ -89,7 +90,7 @@ void update() {
             currentPiece = nextPiece;
             nextPiece = getNewPiece();
             int cleared = clearRows(grid);
-            score += cleared * 100;
+            score += cleared;  // 每消一行更新一次分數
             if (currentPiece.collision(grid, 0, 0)) {
                 running = false; // 遊戲結束
             }
@@ -120,7 +121,18 @@ void render() {
 
     // 繪製下一個方塊
     drawNextPiece(renderer, nextPiece);
-    // drawScore(renderer, score); // 移除顯示分數的功能
+
+    // 繪製分數（使用方塊來顯示）
+    int baseX = 10; // 左上角的X位置
+    int baseY = 10; // 左上角的Y位置
+    int boxSize = 20; // 方塊大小
+
+    // 顯示白色方塊根據分數
+    for (int i = 0; i < score; ++i) {
+        SDL_Rect whiteBox = {baseX + i * (boxSize + 5), baseY, boxSize, boxSize};
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // 白色
+        SDL_RenderFillRect(renderer, &whiteBox);
+    }
 
     SDL_RenderPresent(renderer);
 }
