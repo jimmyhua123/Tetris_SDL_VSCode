@@ -1,6 +1,6 @@
 git add .
 git status
-git commit  -m "5/22 first shape"
+git commit  -m "5/23  fix wall kick"
 =======
 git config --global user.email "212410012@o365.tku.edu.tw"
 git config --global user.name "jimmyhua123"

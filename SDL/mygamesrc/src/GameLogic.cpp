@@ -60,6 +60,8 @@ void drawNextPiece(SDL_Renderer* renderer, Tetromino& next_piece) {
                 SDL_Rect rect = {650 + j * 20, 40 + i * 20, 20, 20};
                 SDL_SetRenderDrawColor(renderer, next_piece.color.r, next_piece.color.g, next_piece.color.b, 255);
                 SDL_RenderFillRect(renderer, &rect);
+                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+                SDL_RenderDrawRect(renderer, &rect);
             }
         }
     }
@@ -68,9 +70,9 @@ void drawNextPiece(SDL_Renderer* renderer, Tetromino& next_piece) {
 void drawScore(SDL_Renderer* renderer, int score) {
     // 簡單的文字渲染替代方案
     // 這裡我們只會畫一個簡單的矩形作為示例
-    SDL_Rect rect = {650, 100, 200, 50};
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderFillRect(renderer, &rect);
+    // SDL_Rect rect = {650, 100, 200, 50};
+    // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    // SDL_RenderFillRect(renderer, &rect);
 
     // 你可以用其他方法渲染文字，比如使用 SDL_ttf 或 OpenGL 文字渲染
 }

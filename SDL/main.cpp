@@ -112,13 +112,15 @@ void render() {
                 SDL_Rect rect = {300 + x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
                 SDL_SetRenderDrawColor(renderer, grid[y][x].r, grid[y][x].g, grid[y][x].b, 255);
                 SDL_RenderFillRect(renderer, &rect);
+                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+                SDL_RenderDrawRect(renderer, &rect);
             }
         }
     }
 
-    // 繪製下一個方塊和分數
+    // 繪製下一個方塊
     drawNextPiece(renderer, nextPiece);
-    drawScore(renderer, score);
+    // drawScore(renderer, score); // 移除顯示分數的功能
 
     SDL_RenderPresent(renderer);
 }
