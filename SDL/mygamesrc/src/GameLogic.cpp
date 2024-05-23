@@ -1,137 +1,76 @@
 #include "GameLogic.h"
-#include "EventHandler.h"
-#include "Constants.h"
-#include <cstdlib>  // 包含標準庫以使用 rand 函數
+#include <algorithm>
+#include <string>  // 新增
 
-shape blocks[7] = {
-    // L BLOCK
-    {{255,165,0}, {{0,0,1,0}, {1,1,1,0}, {0,0,0,0}, {0,0,0,0}}, 5, 4, 3},
-    // Z BLOCK
-    {{255,0,0}, {{1,1,0,0}, {0,1,1,0}, {0,0,0,0}, {0,0,0,0}}, 5, 4, 3},
-    // I BLOCK
-    {{224,255,255}, {{1,1,1,1}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, 5, 4, 4},
-    // J BLOCK
-    {{0,0,255}, {{1,0,0,0}, {1,1,1,0}, {0,0,0,0}, {0,0,0,0}}, 5, 4, 3},
-    // O BLOCK
-    {{255,255,0}, {{1,1,0,0}, {1,1,0,0}, {0,0,0,0}, {0,0,0,0}}, 5, 4, 2},
-    // S BLOCK
-    {{0,0,255}, {{0,1,1,0}, {1,1,0,0}, {0,0,0,0}, {0,0,0,0}}, 5, 4, 3},
-    // T BLOCK
-    {{128,0,128}, {{0,1,0,0}, {1,1,1,0}, {0,0,0,0}, {0,0,0,0}}, 5, 4, 3}
-};
-
-shape cur;
-shape next;
-
-bool fixedGrid[GRID_HEIGHT][GRID_WIDTH] = {{0}};  // 初始化已固定方塊的網格
-
-bool checkCollision(int offsetX, int offsetY, shape* s) {
-    if (s == nullptr) {
-        s = &cur;
-    }
-    for (int i = 0; i < s->size; i++) {
-        for (int j = 0; j < s->size; j++) {
-            if (s->matrix[i][j]) {
-                int newX = s->x + j + offsetX;
-                int newY = s->y + i + offsetY;
-
-                if (newY >= GRID_HEIGHT || // 到底部
-                    newX < 0 || newX >= GRID_WIDTH || // 超出左右邊界
-                    (newY >= 0 && newX >= 0 && newX < GRID_WIDTH && newY < GRID_HEIGHT && fixedGrid[newY][newX])) {  // 碰到固定方塊
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
+std::vector<std::vector<Color>> createGrid() {
+    std::vector<std::vector<Color>> grid(GRID_HEIGHT, std::vector<Color>(GRID_WIDTH, {0, 0, 0}));
+    return grid;
 }
 
-void fixCurrentBlock() {
-    // 將當前方塊固定在網格上
-    for (int i = 0; i < cur.size; i++) {
-        for (int j = 0; j < cur.size; j++) {
-            if (cur.matrix[i][j]) {
-                int newX = cur.x + j;
-                int newY = cur.y + i;
-                if (newY >= 0 && newY < GRID_HEIGHT && newX >= 0 && newX < GRID_WIDTH) {
-                    fixedGrid[newY][newX] = true;
-                }
+void addToGrid(Tetromino& shape, std::vector<std::vector<Color>>& grid) {
+    for (int i = 0; i < shape.shape.size(); ++i) {
+        for (int j = 0; j < shape.shape[i].size(); ++j) {
+            if (shape.shape[i][j]) {
+                grid[(shape.y / TILE_SIZE) + i][(shape.x / TILE_SIZE) + j] = shape.color;
             }
         }
     }
 }
 
-void update() {
-    shape oldState = cur;  // 保存當前狀態以便於回滾
-
-    if (left) cur.x--;
-    if (right) cur.x++;
-    if (down) cur.y++;
-    if (up) rotate();
-
-    // 檢查碰撞並修正位置
-    if (checkCollision(0, 0, nullptr)) {
-        cur = oldState;  // 回滾到之前的狀態
-        if (down) {
-            fixCurrentBlock();  // 固定當前方塊
-            cur = next;  // 生成新方塊
-            next = blocks[rand() % 7];  // 更新下一個方塊
-            if (checkCollision(0, 0, nullptr)) {
-                // 如果新生成的方塊馬上碰撞，遊戲結束邏輯
-                running = false;
+int clearRows(std::vector<std::vector<Color>>& grid) {
+    int cleared = 0;
+    for (int y = GRID_HEIGHT - 1; y >= 0; --y) {
+        bool full = true;
+        for (int x = 0; x < GRID_WIDTH; ++x) {
+            if (grid[y][x].r == 0 && grid[y][x].g == 0 && grid[y][x].b == 0) {
+                full = false;
+                break;
             }
         }
+        if (full) {
+            cleared++;
+            for (int yy = y; yy > 0; --yy) {
+                grid[yy] = grid[yy - 1];
+            }
+            grid[0] = std::vector<Color>(GRID_WIDTH, {0, 0, 0});
+            y++;
+        }
     }
-
-    // 限制方塊在範圍內移動
-    if (cur.x < 0) cur.x = 0;
-    if (cur.x + cur.size > GRID_WIDTH) cur.x = GRID_WIDTH - cur.size;
-    if (cur.y + cur.size > GRID_HEIGHT) cur.y = GRID_HEIGHT - cur.size;
+    return cleared;
 }
 
-void rotate() {
-    shape rotated = reverseCols(transpose(cur));
-    // 檢查旋轉後是否會碰撞，如果不會碰撞，則進行旋轉
-    if (!checkCollision(0, 0, &rotated)) {
-        cur = rotated;
-    } else {
-        // Wall kick 機制，嘗試不同的偏移來避免碰撞
-        const int offsets[5][2] = {
-            {1, 0},   // 向右移動
-            {-1, 0},  // 向左移動
-            {0, 1},   // 向下移動
-            {1, 1},   // 右下移動
-            {-1, 1}   // 左下移動
-        };
-        for (int i = 0; i < 5; ++i) {
-            if (!checkCollision(offsets[i][0], offsets[i][1], &rotated)) {
-                cur = rotated;
-                cur.x += offsets[i][0];
-                cur.y += offsets[i][1];
-                return;
+Tetromino getNewPiece() {
+    return Tetromino(5 * TILE_SIZE, 0, tetrominoes[rand() % tetrominoes.size()]);
+}
+
+void drawGrid(SDL_Renderer* renderer, int offsetX, int offsetY) {
+    for (int y = 0; y < GRID_HEIGHT; ++y) {
+        for (int x = 0; x < GRID_WIDTH; ++x) {
+            SDL_Rect rect = {offsetX + x * TILE_SIZE, offsetY + y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+            SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+            SDL_RenderDrawRect(renderer, &rect);
+        }
+    }
+}
+
+void drawNextPiece(SDL_Renderer* renderer, Tetromino& next_piece) {
+    for (int i = 0; i < next_piece.shape.size(); ++i) {
+        for (int j = 0; j < next_piece.shape[i].size(); ++j) {
+            if (next_piece.shape[i][j]) {
+                SDL_Rect rect = {650 + j * 20, 40 + i * 20, 20, 20};
+                SDL_SetRenderDrawColor(renderer, next_piece.color.r, next_piece.color.g, next_piece.color.b, 255);
+                SDL_RenderFillRect(renderer, &rect);
             }
         }
     }
 }
 
-shape reverseCols(shape s) {
-    shape tmp = s;
-    for(int i = 0; i < s.size; i++) {
-        for(int j = 0; j < s.size / 2; j++) {
-            bool t = s.matrix[i][j];
-            tmp.matrix[i][j] = s.matrix[i][s.size - j - 1];
-            tmp.matrix[i][s.size - j - 1] = t;
-        }
-    }
-    return tmp;
-}
+void drawScore(SDL_Renderer* renderer, int score) {
+    // 簡單的文字渲染替代方案
+    // 這裡我們只會畫一個簡單的矩形作為示例
+    SDL_Rect rect = {650, 100, 200, 50};
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderFillRect(renderer, &rect);
 
-shape transpose(shape s) {
-    shape tmp = s;
-    for(int i = 0; i < s.size; i++) {
-        for(int j = 0; j < s.size; j++) {
-            tmp.matrix[i][j] = s.matrix[j][i];
-        }
-    }
-    return tmp;
+    // 你可以用其他方法渲染文字，比如使用 SDL_ttf 或 OpenGL 文字渲染
 }

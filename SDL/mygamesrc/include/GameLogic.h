@@ -1,14 +1,14 @@
 #pragma once
-#include "Shapes.h"
+#include <vector>
+#include "Color.h"
+#include "Tetromino.h"
 #include "Constants.h"
+#include <SDL2/SDL.h>
 
-extern shape blocks[7];
-extern shape cur;
-extern shape next;
-extern bool fixedGrid[GRID_HEIGHT][GRID_WIDTH];
-
-void update();
-void rotate();
-shape reverseCols(shape s);
-shape transpose(shape s);
-bool checkCollision(int offsetX = 0, int offsetY = 0, shape* s = nullptr);
+std::vector<std::vector<Color>> createGrid();
+void addToGrid(Tetromino& shape, std::vector<std::vector<Color>>& grid);
+int clearRows(std::vector<std::vector<Color>>& grid);
+Tetromino getNewPiece();
+void drawGrid(SDL_Renderer* renderer, int offsetX, int offsetY);
+void drawNextPiece(SDL_Renderer* renderer, Tetromino& next_piece);
+void drawScore(SDL_Renderer* renderer, int score);  // 去掉字型相關代碼

@@ -1,15 +1,9 @@
-// Shapes.h
 #pragma once
-#include <SDL2/SDL.h>
+#include <vector>
+#include "Color.h"
 
-struct block {
-    SDL_Color color;
-    bool active;
-};
+// 定義方塊形狀
+extern std::vector<std::vector<std::vector<int>>> tetrominoes;
 
-struct shape {
-    SDL_Color color;
-    bool matrix[4][4];
-    double x, y;
-    int size;
-};
+// 定義方塊顏色
+extern Color colors[7];
