@@ -8,7 +8,7 @@
 #include "Shapes.h"
 #include "Tetromino.h"
 #include "GameLogic.h"
-#include <string>  // 添加這一行
+#include <string>
 
 // 全局變量
 bool running = true;
@@ -16,9 +16,11 @@ SDL_Renderer* renderer;
 SDL_Window* window;
 Tetromino currentPiece(0, 0, {{0}});
 Tetromino nextPiece(0, 0, {{0}});
+Tetromino holdPiece(0, 0, {{0}}); // 添加 holdPiece
+bool holdUsed = false; // 添加 holdUsed 標誌
 std::vector<std::vector<Color>> grid;
-int score = 15; // 初始化分數為0
-int difficulty = 15; // 初始化難度為0
+int score = 0; // 初始化分數為0
+int difficulty = 0; // 初始化難度為0
 int fallTime = 0;
 int fallSpeed = FALL_SPEED;
 
@@ -75,6 +77,22 @@ void handleInput() {
                         currentPiece.rotate();
                     }
                     break;
+                case SDLK_LSHIFT: // 使用左 Shift 鍵進行 hold 操作
+                    if (!holdUsed) {
+                        if (holdPiece.shape[0][0] == 0) {
+                            holdPiece = currentPiece.copy();
+                            holdPiece.x = 50;  // 確保 hold 方塊的位置固定
+                            holdPiece.y = 50;
+                            currentPiece = nextPiece;
+                            nextPiece = getNewPiece();
+                        } else {
+                            std::swap(currentPiece, holdPiece);
+                            currentPiece.x = 300;  // 確保 currentPiece 重新放回格線區
+                            currentPiece.y = 0;
+                        }
+                        holdUsed = true;
+                    }
+                    break;
             }
         }
     }
@@ -99,6 +117,7 @@ void update() {
             if (currentPiece.collision(grid, 0, 0)) {
                 running = false; // 遊戲結束
             }
+            holdUsed = false; // 重置 hold 標誌
         }
         fallTime = 0;
     }
@@ -127,16 +146,21 @@ void render() {
     // 繪製下一個方塊
     drawNextPiece(renderer, nextPiece);
 
+    // 繪製 hold 方塊
+    if (holdPiece.shape[0][0] != 0) {
+        holdPiece.draw(renderer, 50, 50); // 假設 hold 方塊位置在左側固定範圍內
+    }
+
     // 繪製分數（使用方塊來顯示）
-    int baseX = 10; // 左上角的X位置
-    int baseY = 10; // 左上角的Y位置
+    int scoreBaseX = 50; // 與 hold 方塊底部對齊
+    int scoreBaseY = 150; // 固定在 hold 方塊下方
     int boxSize = 20; // 方塊大小
     int boxesPerRow = 10; // 每行的方塊數
 
     // 顯示白色方塊根據分數
     for (int i = 0; i < score; ++i) {
-        int x = baseX + (i % boxesPerRow) * (boxSize + 5);
-        int y = baseY + (i / boxesPerRow) * (boxSize + 5);
+        int x = scoreBaseX + (i % boxesPerRow) * (boxSize + 5);
+        int y = scoreBaseY + (i / boxesPerRow) * (boxSize + 5);
         SDL_Rect whiteBox = {x, y, boxSize, boxSize};
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // 白色
         SDL_RenderFillRect(renderer, &whiteBox);
@@ -144,7 +168,7 @@ void render() {
 
     // 繪製難度（使用藍色方塊來顯示）
     int difficultyBaseX = 650; // 與 next 方塊顯示的位置相同
-    int difficultyBaseY = 200; // next 方塊的下面位置
+    int difficultyBaseY = 150; // 與 score 方塊對齊
 
     // 顯示藍色方塊根據難度
     for (int i = 0; i < difficulty; ++i) {

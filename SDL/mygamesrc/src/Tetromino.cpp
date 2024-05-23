@@ -12,12 +12,8 @@ void Tetromino::draw(SDL_Renderer* renderer, int offsetX, int offsetY) {
         for (int j = 0; j < shape[i].size(); ++j) {
             if (shape[i][j]) {
                 SDL_Rect rect = {offsetX + x + j * TILE_SIZE, offsetY + y + i * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-                // 填充方塊
                 SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
                 SDL_RenderFillRect(renderer, &rect);
-                // 繪製方塊邊框
-                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
-                SDL_RenderDrawRect(renderer, &rect);
             }
         }
     }
@@ -52,4 +48,8 @@ bool Tetromino::collision(const std::vector<std::vector<Color>>& grid, int offse
         }
     }
     return false;
+}
+
+Tetromino Tetromino::copy() {
+    return Tetromino(x, y, shape);
 }

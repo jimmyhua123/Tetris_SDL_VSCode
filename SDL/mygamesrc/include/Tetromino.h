@@ -1,4 +1,5 @@
 #pragma once
+
 #include <vector>
 #include "Color.h"
 #include "Shapes.h"
@@ -18,4 +19,5 @@ public:
     void rotate();
     void move(int dx, int dy);
     bool collision(const std::vector<std::vector<Color>>& grid, int offsetX, int offsetY);
+    Tetromino copy(); // 只聲明這一行
 };
