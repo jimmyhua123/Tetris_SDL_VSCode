@@ -1,0 +1,4 @@
+10 0
+123 5
+hello 0
+helloworld 0

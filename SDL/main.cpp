@@ -3,27 +3,38 @@
 #include <vector>
 #include <ctime>
 #include <cstdlib>
+#include <fstream>
+#include <windows.h>
+#include <conio.h>
 #include "Constants.h"
 #include "Color.h"
 #include "Shapes.h"
 #include "Tetromino.h"
 #include "GameLogic.h"
+#include "Console.h"
 #include <string>
+#include <map>
+#include <algorithm>
 
-// 全局變量
+using namespace std;
+
+// 全局?量
 bool running = true;
 bool gameOver = false;
+bool gameStarted = false;
 SDL_Renderer* renderer;
 SDL_Window* window;
 Tetromino currentPiece(0, 0, {{0}});
 Tetromino nextPiece(0, 0, {{0}});
 std::vector<std::vector<Color>> grid;
-int score = 0; // 初始化分數為0
-int difficulty = 0; // 初始化難度為0
+int score = 0; // 初始化分??0
+int difficulty = 0; // 初始化?度?0
 int fallTime = 0;
 int fallSpeed = FALL_SPEED;
+std::string playerID; // 玩家ID
+std::map<std::string, int> playerScores; // 玩家分?表
 
-// 按鈕結構體
+// 按??构体
 struct Button {
     SDL_Rect rect;
     std::string label;
@@ -31,25 +42,27 @@ struct Button {
 };
 
 // 初始化 SDL
-bool init() {
+bool initSDL() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "SDL 初始化失敗! SDL_Error: " << SDL_GetError() << std::endl;
+        std::cerr << "SDL 初始化失?! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
     window = SDL_CreateWindow("212410012", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+
     if (window == nullptr) {
-        std::cerr << "視窗創建失敗! SDL_Error: " << SDL_GetError() << std::endl;
+        std::cerr << "窗口?建失?! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
     if (renderer == nullptr) {
-        std::cerr << "渲染器創建失敗! SDL_Error: " << SDL_GetError() << std::endl;
+        std::cerr << "渲染器?建失?! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
     return true;
 }
 
-// 處理輸入事件
+// ?理?入事件
 void handleInput(Button& button) {
     SDL_Event e;
     while (SDL_PollEvent(&e) != 0) {
@@ -66,7 +79,7 @@ void handleInput(Button& button) {
             if (button.pressed) {
                 button.pressed = false;
                 if (gameOver) {
-                    // 重置遊戲狀態
+                    // 重置游???
                     grid = createGrid();
                     currentPiece = getNewPiece();
                     nextPiece = getNewPiece();
@@ -109,9 +122,9 @@ void handleInput(Button& button) {
     }
 }
 
-// 更新遊戲邏輯
+// 更新游???
 void update() {
-    if (gameOver) {
+    if (gameOver || !gameStarted) {
         return;
     }
 
@@ -124,25 +137,26 @@ void update() {
             currentPiece = nextPiece;
             nextPiece = getNewPiece();
             int cleared = clearRows(grid);
-            score += cleared;  // 每消一行更新一次分數
+            score += cleared;  // 每消一行更新一次分?
+            playerScores[playerID] = score; // 更新玩家分?
             if (score >= (difficulty + 1) * 5) {
-                difficulty += 1;  // 每消5行增加1難度
+                difficulty += 1;  // 每消5行增加1?度
                 fallSpeed = FALL_SPEED / (difficulty + 1);  // 更新下落速度
             }
             if (currentPiece.collision(grid, 0, 0)) {
-                gameOver = true; // 遊戲結束
+                gameOver = true; // 游??束
             }
         }
         fallTime = 0;
     }
 }
 
-// 渲染遊戲畫面
+// 渲染游??面
 void render(Button& button) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    // 繪製遊戲區域
+    // ?制游??域
     drawGrid(renderer, 300, 0);
     currentPiece.draw(renderer, 300, 0);
     for (int y = 0; y < GRID_HEIGHT; ++y) {
@@ -157,16 +171,16 @@ void render(Button& button) {
         }
     }
 
-    // 繪製下一個方塊
+    // ?制下一?方?
     drawNextPiece(renderer, nextPiece);
 
-    // 繪製分數（使用方塊來顯示）
+    // ?制分?（使用方???示）
     int scoreBaseX = 50; // 固定位置
     int scoreBaseY = 150; // 固定位置
-    int boxSize = 20; // 方塊大小
-    int boxesPerRow = 10; // 每行的方塊數
+    int boxSize = 20; // 方?大小
+    int boxesPerRow = 10; // 每行的方??
 
-    // 顯示白色方塊根據分數
+    // ?示白色方?根据分?
     for (int i = 0; i < score; ++i) {
         int x = scoreBaseX + (i % boxesPerRow) * (boxSize + 5);
         int y = scoreBaseY + (i / boxesPerRow) * (boxSize + 5);
@@ -175,21 +189,21 @@ void render(Button& button) {
         SDL_RenderFillRect(renderer, &whiteBox);
     }
 
-    // 繪製難度（使用藍色方塊來顯示）
-    int difficultyBaseX = 650; // 與 next 方塊顯示的位置相同
-    int difficultyBaseY = 150; // 與 score 方塊對齊
+    // ?制?度（使用?色方???示）
+    int difficultyBaseX = 650; // 与 next 方??示的位置相同
+    int difficultyBaseY = 150; // 与 score 方???
 
-    // 顯示藍色方塊根據難度
+    // ?示?色方?根据?度
     for (int i = 0; i < difficulty; ++i) {
         int x = difficultyBaseX + (i % boxesPerRow) * (boxSize + 5);
         int y = difficultyBaseY + (i / boxesPerRow) * (boxSize + 5);
         SDL_Rect blueBox = {x, y, boxSize, boxSize};
-        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // 藍色
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // ?色
         SDL_RenderFillRect(renderer, &blueBox);
     }
 
-    // 繪製按鈕
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // 紅色
+    // ?制按?
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // ?色
     SDL_RenderFillRect(renderer, &button.rect);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // 白色
     SDL_RenderDrawRect(renderer, &button.rect);
@@ -198,19 +212,28 @@ void render(Button& button) {
 }
 
 int main(int argc, char* argv[]) {
-    srand(static_cast<unsigned int>(time(nullptr)));
-    if (!init()) {
-        std::cerr << "初始化失敗!" << std::endl;
+    HINSTANCE hInstance = GetModuleHandle(nullptr);
+    int nCmdShow = SW_SHOW;
+
+    // 初始化 SDL
+    if (!initSDL()) {
+        std::cerr << "初始化失?!" << std::endl;
         return -1;
     }
+
+    // 加?玩家?据
+    loadPlayers();
+
+    // ?建控制台窗口
+    createConsole();
 
     grid = createGrid();
     currentPiece = getNewPiece();
     nextPiece = getNewPiece();
 
-    // 定義按鈕
+    // 定?按?
     Button button;
-    button.rect = {50, 50, 100, 50}; // 定義按鈕的位置和大小，放在左上角
+    button.rect = {50, 50, 100, 50}; // 定?按?的位置和大小，放在左上角
     button.label = "Restart";
     button.pressed = false;
 
@@ -218,8 +241,16 @@ int main(int argc, char* argv[]) {
         handleInput(button);
         update();
         render(button);
-        SDL_Delay(16); // 控制遊戲速度
+
+        if (_kbhit()) {
+            handleConsoleInput();
+        }
+
+        SDL_Delay(16); // 控制游?速度
     }
+
+    // 保存玩家?据
+    savePlayers();
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

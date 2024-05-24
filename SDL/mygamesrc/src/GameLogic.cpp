@@ -1,6 +1,6 @@
 #include "GameLogic.h"
 #include <algorithm>
-#include <string>  // ·s¼W
+#include <string>
 
 std::vector<std::vector<Color>> createGrid() {
     std::vector<std::vector<Color>> grid(GRID_HEIGHT, std::vector<Color>(GRID_WIDTH, {0, 0, 0}));
@@ -8,9 +8,9 @@ std::vector<std::vector<Color>> createGrid() {
 }
 
 void addToGrid(Tetromino& shape, std::vector<std::vector<Color>>& grid) {
-    for (int i = 0; i < shape.shape.size(); ++i) {
-        for (int j = 0; j < shape.shape[i].size(); ++j) {
-            if (shape.shape[i][j]) {
+    for (int i = 0; i < shape.shape->size(); ++i) {
+        for (int j = 0; j < shape.shape->at(i).size(); ++j) {
+            if (shape.shape->at(i)[j]) {
                 grid[(shape.y / TILE_SIZE) + i][(shape.x / TILE_SIZE) + j] = shape.color;
             }
         }
@@ -54,17 +54,13 @@ void drawGrid(SDL_Renderer* renderer, int offsetX, int offsetY) {
 }
 
 void drawNextPiece(SDL_Renderer* renderer, Tetromino& next_piece) {
-    for (int i = 0; i < next_piece.shape.size(); ++i) {
-        for (int j = 0; j < next_piece.shape[i].size(); ++j) {
-            if (next_piece.shape[i][j]) {
+    for (int i = 0; i < next_piece.shape->size(); ++i) {
+        for (int j = 0; j < next_piece.shape->at(i).size(); ++j) {
+            if (next_piece.shape->at(i)[j]) {
                 SDL_Rect rect = {650 + j * 20, 40 + i * 20, 20, 20};
                 SDL_SetRenderDrawColor(renderer, next_piece.color.r, next_piece.color.g, next_piece.color.b, 255);
                 SDL_RenderFillRect(renderer, &rect);
-                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
-                SDL_RenderDrawRect(renderer, &rect);
             }
         }
     }
 }
-
-

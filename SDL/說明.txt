@@ -3,9 +3,8 @@
 把 SDL2-devel-2.30.3-mingw /i686-w64/的 include,lib 複製到src 
 把 bin/SDL2.dll 也複製到資料夾下
 編譯	
-g++ -I src/include -L src/lib -o main main.cpp -lmingw32 -lSDL2main -lSDL2
+g++ -o main main.cpp mygamesrc/src/Shapes.cpp mygamesrc/src/Tetromino.cpp mygamesrc/src/GameLogic.cpp mygamesrc/src/drawScore.cpp mygamesrc/src/Console.cpp -Imygamesrc/include -Isrc/include -Isrc/include/SDL2 -Lsrc/lib -lmingw32 -lSDL2main -lSDL2
 
 
-g++ -o main main.cpp mygamesrc/src/Shapes.cpp mygamesrc/src/Tetromino.cpp mygamesrc/src/GameLogic.cpp mygamesrc/src/drawScore.cpp -Imygamesrc/include -Isrc/include -Isrc/include/SDL2 -Lsrc/lib -lmingw32 -lSDL2main -lSDL2
 cd c/SDL
 

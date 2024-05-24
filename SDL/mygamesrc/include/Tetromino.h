@@ -1,5 +1,4 @@
 #pragma once
-
 #include <vector>
 #include "Color.h"
 #include "Shapes.h"
@@ -9,15 +8,15 @@
 class Tetromino {
 public:
     int x, y;
-    std::vector<std::vector<int>> shape;
-    Color color;
     int rotation;
+    Color color; // 添加顏色屬性
+    std::vector<std::vector<int>>* shape; // 使用指?
 
-    Tetromino(int startX, int startY, std::vector<std::vector<int>> shape);
+    Tetromino(int startX, int startY, const std::vector<std::vector<int>>& shape);
+    ~Tetromino();
 
     void draw(SDL_Renderer* renderer, int offsetX, int offsetY);
     void rotate();
     void move(int dx, int dy);
     bool collision(const std::vector<std::vector<Color>>& grid, int offsetX, int offsetY);
-    Tetromino copy(); // 只聲明這一行
 };
