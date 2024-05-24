@@ -119,7 +119,9 @@ void handleConsoleInput() {
             } else {
                 gameStarted = true;
                 startGame(); // ?用 startGame 函?
+                std::cout << "\n********************" << std::endl;
                 std::cout << "Game started!\n";
+                std::cout << "\n********************" << std::endl;
             }
             break;
         case 6:
@@ -132,22 +134,22 @@ void handleConsoleInput() {
     std::cout << "Please choose an operation: ";
 }
 
-void startGame() {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "SDL 初始化失?! SDL_Error: " << SDL_GetError() << std::endl;
-        running = false;
-        return;
-    }
-    window = SDL_CreateWindow("212410012", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
-    if (window == nullptr) {
-        std::cerr << "窗口?建失?! SDL_Error: " << SDL_GetError() << std::endl;
-        running = false;
-        return;
-    }
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (renderer == nullptr) {
-        std::cerr << "渲染器?建失?! SDL_Error: " << SDL_GetError() << std::endl;
-        running = false;
-        return;
-    }
-}
+// void startGame() {
+//     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+//         std::cerr << "SDL 初始化失?! SDL_Error: " << SDL_GetError() << std::endl;
+//         running = false;
+//         return;
+//     }
+//     window = SDL_CreateWindow("212410012", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
+//     if (window == nullptr) {
+//         std::cerr << "窗口?建失?! SDL_Error: " << SDL_GetError() << std::endl;
+//         running = false;
+//         return;
+//     }
+//     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+//     if (renderer == nullptr) {
+//         std::cerr << "渲染器?建失?! SDL_Error: " << SDL_GetError() << std::endl;
+//         running = false;
+//         return;
+//     }
+// }

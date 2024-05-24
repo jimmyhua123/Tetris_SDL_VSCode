@@ -43,6 +43,7 @@ struct Button {
 
 // endGame 函數聲明
 void endGame();
+void startGame();  // 在 main.cpp 中聲明 startGame
 
 // 處理輸入事件
 void handleInput(Button& button) {
@@ -199,11 +200,12 @@ void render(Button& button) {
 
 // 定義 endGame 函數
 void endGame() {
+    std::cout << "\n\n********************" << std::endl;
     std::cout << "Game Over!" << std::endl;
+    std::cout << "Player ID: " << playerID << ", Score: " << score << std::endl;
+    std::cout << "\n********************" << std::endl;
     gameOver = true; // 設置遊戲結束標誌
-    running = false; // 停止遊戲循環
-
-    // 清理 SDL 資源
+    gameStarted = false; // 停止遊戲循環
     if (renderer) {
         SDL_DestroyRenderer(renderer);
         renderer = nullptr;
@@ -215,6 +217,40 @@ void endGame() {
     SDL_Quit();
 }
 
+
+// 定義 startGame 函數
+void startGame() {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        std::cerr << "SDL 初始化失敗！ SDL_Error: " << SDL_GetError() << std::endl;
+        return;
+    }
+
+    window = SDL_CreateWindow("212410012", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
+    if (window == nullptr) {
+        std::cerr << "窗口創建失敗！ SDL_Error: " << SDL_GetError() << std::endl;
+        SDL_Quit();
+        return;
+    }
+
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == nullptr) {
+        std::cerr << "渲染器創建失敗！ SDL_Error: " << SDL_GetError() << std::endl;
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return;
+    }
+
+    grid = createGrid();
+    currentPiece = getNewPiece();
+    nextPiece = getNewPiece();
+    score = 0;
+    difficulty = 0;
+    fallSpeed = FALL_SPEED;
+    fallTime = 0;
+
+    gameStarted = true;
+}
+
 int main(int argc, char* argv[]) {
     HINSTANCE hInstance = GetModuleHandle(nullptr);
     int nCmdShow = SW_SHOW;
@@ -224,10 +260,6 @@ int main(int argc, char* argv[]) {
 
     // 創建控制台窗口
     createConsole();
-
-    grid = createGrid();
-    currentPiece = getNewPiece();
-    nextPiece = getNewPiece();
 
     // 定義按鈕
     Button button;
@@ -245,6 +277,19 @@ int main(int argc, char* argv[]) {
         }
 
         SDL_Delay(16); // 控制遊戲速度
+
+        // 如果遊戲結束，顯示選單
+        if (gameOver) {
+            std::cout << "\nPlayer Management System\n";
+            std::cout << "1. Enter Player ID\n";
+            std::cout << "2. Delete Player ID\n";
+            std::cout << "3. Search Player ID\n";
+            std::cout << "4. Print Score Ranking\n";
+            std::cout << "5. Start the Game\n";
+            std::cout << "6. Exit\n";
+            std::cout << "Please choose an operation: ";
+            gameOver = false; // 重置gameOver狀態以避免重複顯示選單
+        }
     }
 
     // 保存玩家數據
