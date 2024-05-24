@@ -16,8 +16,6 @@ SDL_Renderer* renderer;
 SDL_Window* window;
 Tetromino currentPiece(0, 0, {{0}});
 Tetromino nextPiece(0, 0, {{0}});
-Tetromino holdPiece(0, 0, {{0}}); // 添加 holdPiece
-bool holdUsed = false; // 添加 holdUsed 標誌
 std::vector<std::vector<Color>> grid;
 int score = 0; // 初始化分數為0
 int difficulty = 0; // 初始化難度為0
@@ -77,22 +75,6 @@ void handleInput() {
                         currentPiece.rotate();
                     }
                     break;
-                case SDLK_LSHIFT: // 使用左 Shift 鍵進行 hold 操作
-                    if (!holdUsed) {
-                        if (holdPiece.shape[0][0] == 0) {
-                            holdPiece = currentPiece.copy();
-                            holdPiece.x = 50;  // 確保 hold 方塊的位置固定
-                            holdPiece.y = 50;
-                            currentPiece = nextPiece;
-                            nextPiece = getNewPiece();
-                        } else {
-                            std::swap(currentPiece, holdPiece);
-                            currentPiece.x = 300;  // 確保 currentPiece 重新放回格線區
-                            currentPiece.y = 0;
-                        }
-                        holdUsed = true;
-                    }
-                    break;
             }
         }
     }
@@ -117,7 +99,6 @@ void update() {
             if (currentPiece.collision(grid, 0, 0)) {
                 running = false; // 遊戲結束
             }
-            holdUsed = false; // 重置 hold 標誌
         }
         fallTime = 0;
     }
@@ -146,14 +127,9 @@ void render() {
     // 繪製下一個方塊
     drawNextPiece(renderer, nextPiece);
 
-    // 繪製 hold 方塊
-    if (holdPiece.shape[0][0] != 0) {
-        holdPiece.draw(renderer, 50, 50); // 假設 hold 方塊位置在左側固定範圍內
-    }
-
     // 繪製分數（使用方塊來顯示）
-    int scoreBaseX = 50; // 與 hold 方塊底部對齊
-    int scoreBaseY = 150; // 固定在 hold 方塊下方
+    int scoreBaseX = 50; // 固定位置
+    int scoreBaseY = 150; // 固定位置
     int boxSize = 20; // 方塊大小
     int boxesPerRow = 10; // 每行的方塊數
 
