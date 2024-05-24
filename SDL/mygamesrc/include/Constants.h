@@ -1,3 +1,4 @@
+// c\SDL\mygamesrc\include\Constants.h
 #pragma once
 
 const int SCREEN_WIDTH = 1000;

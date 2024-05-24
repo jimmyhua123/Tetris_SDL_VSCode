@@ -18,7 +18,7 @@
 
 using namespace std;
 
-// 全局?量
+// 全局變量
 bool running = true;
 bool gameOver = false;
 bool gameStarted = false;
@@ -27,21 +27,24 @@ SDL_Window* window = nullptr;
 Tetromino currentPiece(0, 0, {{0}});
 Tetromino nextPiece(0, 0, {{0}});
 std::vector<std::vector<Color>> grid;
-int score = 0; // 初始化分??0
-int difficulty = 0; // 初始化?度?0
+int score = 0; // 初始化分數為0
+int difficulty = 0; // 初始化難度為0
 int fallTime = 0;
 int fallSpeed = FALL_SPEED;
 std::string playerID; // 玩家ID
-std::map<std::string, int> playerScores; // 玩家分?表
+std::map<std::string, int> playerScores; // 玩家分數表
 
-// 按??构体
+// 按鈕結構體
 struct Button {
     SDL_Rect rect;
     std::string label;
     bool pressed;
 };
 
-// ?理?入事件
+// endGame 函數聲明
+void endGame();
+
+// 處理輸入事件
 void handleInput(Button& button) {
     SDL_Event e;
     while (SDL_PollEvent(&e) != 0) {
@@ -58,7 +61,7 @@ void handleInput(Button& button) {
             if (button.pressed) {
                 button.pressed = false;
                 if (gameOver) {
-                    // 重置游???
+                    // 重置遊戲狀態
                     grid = createGrid();
                     currentPiece = getNewPiece();
                     nextPiece = getNewPiece();
@@ -101,7 +104,7 @@ void handleInput(Button& button) {
     }
 }
 
-// 更新游???
+// 更新遊戲邏輯
 void update() {
     if (gameOver || !gameStarted) {
         return;
@@ -116,21 +119,21 @@ void update() {
             currentPiece = nextPiece;
             nextPiece = getNewPiece();
             int cleared = clearRows(grid);
-            score += cleared;  // 每消一行更新一次分?
-            playerScores[playerID] = score; // 更新玩家分?
+            score += cleared;  // 每消一行更新一次分數
+            playerScores[playerID] = score; // 更新玩家分數
             if (score >= (difficulty + 1) * 5) {
-                difficulty += 1;  // 每消5行增加1?度
+                difficulty += 1;  // 每消5行增加1難度
                 fallSpeed = FALL_SPEED / (difficulty + 1);  // 更新下落速度
             }
             if (currentPiece.collision(grid, 0, 0)) {
-                gameOver = true; // 游??束
+                endGame(); // 呼叫 endGame 函數
             }
         }
         fallTime = 0;
     }
 }
 
-// 渲染游??面
+// 渲染遊戲畫面
 void render(Button& button) {
     if (!gameStarted) {
         return;
@@ -139,7 +142,7 @@ void render(Button& button) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    // ?制游??域
+    // 繪製遊戲區域
     drawGrid(renderer, 300, 0);
     currentPiece.draw(renderer, 300, 0);
     for (int y = 0; y < GRID_HEIGHT; ++y) {
@@ -154,16 +157,16 @@ void render(Button& button) {
         }
     }
 
-    // ?制下一?方?
+    // 繪製下一個方塊
     drawNextPiece(renderer, nextPiece);
 
-    // ?制分?（使用方???示）
+    // 繪製分數（使用方塊來顯示）
     int scoreBaseX = 50; // 固定位置
     int scoreBaseY = 150; // 固定位置
-    int boxSize = 20; // 方?大小
-    int boxesPerRow = 10; // 每行的方??
+    int boxSize = 20; // 方塊大小
+    int boxesPerRow = 10; // 每行的方塊數
 
-    // ?示白色方?根据分?
+    // 顯示白色方塊根據分數
     for (int i = 0; i < score; ++i) {
         int x = scoreBaseX + (i % boxesPerRow) * (boxSize + 5);
         int y = scoreBaseY + (i / boxesPerRow) * (boxSize + 5);
@@ -172,21 +175,21 @@ void render(Button& button) {
         SDL_RenderFillRect(renderer, &whiteBox);
     }
 
-    // ?制?度（使用?色方???示）
-    int difficultyBaseX = 650; // 与 next 方??示的位置相同
-    int difficultyBaseY = 150; // 与 score 方???
+    // 繪製難度（使用藍色方塊來顯示）
+    int difficultyBaseX = 650; // 與 next 方塊顯示的位置相同
+    int difficultyBaseY = 150; // 與 score 方塊對齊
 
-    // ?示?色方?根据?度
+    // 顯示藍色方塊根據難度
     for (int i = 0; i < difficulty; ++i) {
         int x = difficultyBaseX + (i % boxesPerRow) * (boxSize + 5);
         int y = difficultyBaseY + (i / boxesPerRow) * (boxSize + 5);
         SDL_Rect blueBox = {x, y, boxSize, boxSize};
-        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // ?色
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // 藍色
         SDL_RenderFillRect(renderer, &blueBox);
     }
 
-    // ?制按?
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // ?色
+    // 繪製按鈕
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // 紅色
     SDL_RenderFillRect(renderer, &button.rect);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // 白色
     SDL_RenderDrawRect(renderer, &button.rect);
@@ -194,23 +197,41 @@ void render(Button& button) {
     SDL_RenderPresent(renderer);
 }
 
+// 定義 endGame 函數
+void endGame() {
+    std::cout << "Game Over!" << std::endl;
+    gameOver = true; // 設置遊戲結束標誌
+    running = false; // 停止遊戲循環
+
+    // 清理 SDL 資源
+    if (renderer) {
+        SDL_DestroyRenderer(renderer);
+        renderer = nullptr;
+    }
+    if (window) {
+        SDL_DestroyWindow(window);
+        window = nullptr;
+    }
+    SDL_Quit();
+}
+
 int main(int argc, char* argv[]) {
     HINSTANCE hInstance = GetModuleHandle(nullptr);
     int nCmdShow = SW_SHOW;
 
-    // 加?玩家?据
+    // 加載玩家數據
     loadPlayers();
 
-    // ?建控制台窗口
+    // 創建控制台窗口
     createConsole();
 
     grid = createGrid();
     currentPiece = getNewPiece();
     nextPiece = getNewPiece();
 
-    // 定?按?
+    // 定義按鈕
     Button button;
-    button.rect = {50, 50, 100, 50}; // 定?按?的位置和大小，放在左上角
+    button.rect = {50, 50, 100, 50}; // 定義按鈕的位置和大小，放在左上角
     button.label = "Restart";
     button.pressed = false;
 
@@ -223,19 +244,11 @@ int main(int argc, char* argv[]) {
             handleConsoleInput();
         }
 
-        SDL_Delay(16); // 控制游?速度
+        SDL_Delay(16); // 控制遊戲速度
     }
 
-    // 保存玩家?据
+    // 保存玩家數據
     savePlayers();
-
-    if (renderer) {
-        SDL_DestroyRenderer(renderer);
-    }
-    if (window) {
-        SDL_DestroyWindow(window);
-    }
-    SDL_Quit();
 
     return 0;
 }

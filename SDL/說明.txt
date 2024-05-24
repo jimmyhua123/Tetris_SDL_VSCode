@@ -8,3 +8,28 @@ g++ -o main main.cpp mygamesrc/src/Shapes.cpp mygamesrc/src/Tetromino.cpp mygame
 
 cd c/SDL
 
+C:\VSCode\c\SDL\
+    |- main.cpp
+    |- src\
+        |- include\
+            |- SDL2\
+                |- SDL.h
+        |- lib\
+            |- libSDL2.a
+            |- libSDL2main.a
+    |- mygamesrc\
+        |- include\
+            |- Constants.h
+            |- Color.h
+            |- Console.h
+            |- Shapes.h
+            |- Tetromino.h
+            |- GameLogic.h
+        |- src\
+            |- Console.cpp
+            |- Shapes.cpp
+            |- drawScore.cpp
+            |- Tetromino.cpp
+            |- GameLogic.cpp
+    |- SDL2.dll (將此文件放在與可執行文件相同的目錄中)
+
