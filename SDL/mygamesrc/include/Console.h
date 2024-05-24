@@ -5,5 +5,6 @@ void createConsole();
 void handleConsoleInput();
 void loadPlayers();
 void savePlayers();
+void startGame();
 
 #endif

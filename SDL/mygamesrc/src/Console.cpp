@@ -5,12 +5,15 @@
 #include <map>
 #include <string>
 #include <algorithm>
-#include <vector> // 添加?一行
+#include <vector>
+#include <SDL2/SDL.h> // 添加?一行
 
 extern bool running;
 extern bool gameStarted;
 extern std::string playerID;
 extern std::map<std::string, int> playerScores;
+extern SDL_Renderer* renderer; // 添加?一行
+extern SDL_Window* window; // 添加?一行
 
 void addPlayer() {
     std::string id;
@@ -114,6 +117,7 @@ void handleConsoleInput() {
                 std::cout << "Please enter a Player ID before starting the game.\n";
             } else {
                 gameStarted = true;
+                startGame(); // ?用 startGame 函?
                 std::cout << "Game started!\n";
             }
             break;
@@ -125,4 +129,24 @@ void handleConsoleInput() {
             break;
     }
     std::cout << "Please choose an operation: ";
+}
+
+void startGame() {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        std::cerr << "SDL 初始化失?! SDL_Error: " << SDL_GetError() << std::endl;
+        running = false;
+        return;
+    }
+    window = SDL_CreateWindow("212410012", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
+    if (window == nullptr) {
+        std::cerr << "窗口?建失?! SDL_Error: " << SDL_GetError() << std::endl;
+        running = false;
+        return;
+    }
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == nullptr) {
+        std::cerr << "渲染器?建失?! SDL_Error: " << SDL_GetError() << std::endl;
+        running = false;
+        return;
+    }
 }

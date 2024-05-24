@@ -22,8 +22,8 @@ using namespace std;
 bool running = true;
 bool gameOver = false;
 bool gameStarted = false;
-SDL_Renderer* renderer;
-SDL_Window* window;
+SDL_Renderer* renderer = nullptr;
+SDL_Window* window = nullptr;
 Tetromino currentPiece(0, 0, {{0}});
 Tetromino nextPiece(0, 0, {{0}});
 std::vector<std::vector<Color>> grid;
@@ -40,27 +40,6 @@ struct Button {
     std::string label;
     bool pressed;
 };
-
-// 初始化 SDL
-bool initSDL() {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "SDL 初始化失?! SDL_Error: " << SDL_GetError() << std::endl;
-        return false;
-    }
-    window = SDL_CreateWindow("212410012", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-
-    if (window == nullptr) {
-        std::cerr << "窗口?建失?! SDL_Error: " << SDL_GetError() << std::endl;
-        return false;
-    }
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
-    if (renderer == nullptr) {
-        std::cerr << "渲染器?建失?! SDL_Error: " << SDL_GetError() << std::endl;
-        return false;
-    }
-    return true;
-}
 
 // ?理?入事件
 void handleInput(Button& button) {
@@ -153,6 +132,10 @@ void update() {
 
 // 渲染游??面
 void render(Button& button) {
+    if (!gameStarted) {
+        return;
+    }
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -215,12 +198,6 @@ int main(int argc, char* argv[]) {
     HINSTANCE hInstance = GetModuleHandle(nullptr);
     int nCmdShow = SW_SHOW;
 
-    // 初始化 SDL
-    if (!initSDL()) {
-        std::cerr << "初始化失?!" << std::endl;
-        return -1;
-    }
-
     // 加?玩家?据
     loadPlayers();
 
@@ -252,8 +229,12 @@ int main(int argc, char* argv[]) {
     // 保存玩家?据
     savePlayers();
 
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    if (renderer) {
+        SDL_DestroyRenderer(renderer);
+    }
+    if (window) {
+        SDL_DestroyWindow(window);
+    }
     SDL_Quit();
 
     return 0;
