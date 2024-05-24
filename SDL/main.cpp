@@ -12,6 +12,7 @@
 
 // 全局變量
 bool running = true;
+bool gameOver = false;
 SDL_Renderer* renderer;
 SDL_Window* window;
 Tetromino currentPiece(0, 0, {{0}});
@@ -21,6 +22,13 @@ int score = 0; // 初始化分數為0
 int difficulty = 0; // 初始化難度為0
 int fallTime = 0;
 int fallSpeed = FALL_SPEED;
+
+// 按鈕結構體
+struct Button {
+    SDL_Rect rect;
+    std::string label;
+    bool pressed;
+};
 
 // 初始化 SDL
 bool init() {
@@ -42,12 +50,33 @@ bool init() {
 }
 
 // 處理輸入事件
-void handleInput() {
+void handleInput(Button& button) {
     SDL_Event e;
     while (SDL_PollEvent(&e) != 0) {
         if (e.type == SDL_QUIT) {
             running = false;
-        } else if (e.type == SDL_KEYDOWN) {
+        } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+            int x, y;
+            SDL_GetMouseState(&x, &y);
+            if (x >= button.rect.x && x <= button.rect.x + button.rect.w &&
+                y >= button.rect.y && y <= button.rect.y + button.rect.h) {
+                button.pressed = true;
+            }
+        } else if (e.type == SDL_MOUSEBUTTONUP) {
+            if (button.pressed) {
+                button.pressed = false;
+                if (gameOver) {
+                    // 重置遊戲狀態
+                    grid = createGrid();
+                    currentPiece = getNewPiece();
+                    nextPiece = getNewPiece();
+                    score = 0;
+                    difficulty = 0;
+                    fallSpeed = FALL_SPEED;
+                    gameOver = false;
+                }
+            }
+        } else if (e.type == SDL_KEYDOWN && !gameOver) {
             switch (e.key.keysym.sym) {
                 case SDLK_LEFT:
                     currentPiece.move(-TILE_SIZE, 0);
@@ -82,6 +111,10 @@ void handleInput() {
 
 // 更新遊戲邏輯
 void update() {
+    if (gameOver) {
+        return;
+    }
+
     fallTime += 1;
     if (fallTime >= fallSpeed / 10) {
         currentPiece.move(0, TILE_SIZE);
@@ -97,7 +130,7 @@ void update() {
                 fallSpeed = FALL_SPEED / (difficulty + 1);  // 更新下落速度
             }
             if (currentPiece.collision(grid, 0, 0)) {
-                running = false; // 遊戲結束
+                gameOver = true; // 遊戲結束
             }
         }
         fallTime = 0;
@@ -105,7 +138,7 @@ void update() {
 }
 
 // 渲染遊戲畫面
-void render() {
+void render(Button& button) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -155,6 +188,12 @@ void render() {
         SDL_RenderFillRect(renderer, &blueBox);
     }
 
+    // 繪製按鈕
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // 紅色
+    SDL_RenderFillRect(renderer, &button.rect);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // 白色
+    SDL_RenderDrawRect(renderer, &button.rect);
+
     SDL_RenderPresent(renderer);
 }
 
@@ -169,10 +208,16 @@ int main(int argc, char* argv[]) {
     currentPiece = getNewPiece();
     nextPiece = getNewPiece();
 
+    // 定義按鈕
+    Button button;
+    button.rect = {50, 50, 100, 50}; // 定義按鈕的位置和大小，放在左上角
+    button.label = "Restart";
+    button.pressed = false;
+
     while (running) {
-        handleInput();
+        handleInput(button);
         update();
-        render();
+        render(button);
         SDL_Delay(16); // 控制遊戲速度
     }
 
